@@ -31,7 +31,46 @@ const region = config.region;
   }
   const alarm = await new CloudWatchClient({region}).send(new DescribeAlarmsCommand({AlarmNames:[config.alarm_name]}));
   if (alarm.MetricAlarms?.length) throw new Error('La alarma todavia existe.');
-  results.awsChecks.alarm = { absent:true }; results.passed = true;
+  results.awsChecks.alarm = { absent:true };
+  // Use the authenticated AWS CLI for services not needed by the application SDK.
+  function cli(arguments_, expectedErrors = []) {
+    const response = spawnSync('aws', [...arguments_, '--region', region, '--output', 'json', '--no-cli-pager'], { encoding:'utf8' });
+    if (response.error) throw response.error;
+    if (response.status !== 0) {
+      const code = response.stderr.match(/\(([^)]+)\) when calling/)?.[1];
+      if (!expectedErrors.includes(code)) throw new Error(response.stderr.trim());
+      return null;
+    }
+    return JSON.parse(response.stdout);
+  }
+  for (const functionName of [config.upload_function, config.crop_function]) {
+    const role = cli(['iam','get-role','--role-name',`${functionName}-lambda-role`], ['NoSuchEntity']);
+    if (role) throw new Error('Un rol Lambda del proyecto todavia existe.');
+  }
+  results.awsChecks.iamRoles = { absent:true };
+  const apiId = new URL(config.api_url).hostname.split('.')[0];
+  if (cli(['apigatewayv2','get-api','--api-id',apiId], ['NotFoundException'])) throw new Error('La API todavia existe.');
+  results.awsChecks.api = { absent:true };
+  if (cli(['sns','get-topic-attributes','--topic-arn',config.sns_topic_arn], ['NotFound'])) throw new Error('El topico SNS todavia existe.');
+  results.awsChecks.snsTopic = { absent:true };
+  for (const name of config.log_groups) {
+    const response = cli(['logs','describe-log-groups','--log-group-name-prefix',name]);
+    if (response.logGroups.some(group => group.logGroupName === name)) throw new Error('Un grupo de logs todavia existe.');
+  }
+  results.awsChecks.logGroups = { absent:true };
+  const endpoints = cli(['ec2','describe-vpc-endpoints','--filters',`Name=vpc-id,Values=${config.vpc_id}`]);
+  if (endpoints.VpcEndpoints.length) throw new Error('Quedan endpoints de la VPC.');
+  results.awsChecks.endpoints = { absent:true };
+  const nats = cli(['ec2','describe-nat-gateways','--filter',`Name=vpc-id,Values=${config.vpc_id}`]);
+  if (nats.NatGateways.some(nat => nat.State !== 'deleted')) throw new Error('Un NAT Gateway no termino de eliminarse.');
+  results.awsChecks.natGateways = { absent:true, retainedDeletedRecords:nats.NatGateways.length };
+  const before = JSON.parse(fs.readFileSync(path.join(directory,'aws-evidence.json'),'utf8'));
+  const allocations = before.natGateways.NatGateways.flatMap(nat => nat.NatGatewayAddresses.map(address => address.AllocationId)).filter(Boolean);
+  for (const allocationId of allocations) {
+    if (cli(['ec2','describe-addresses','--allocation-ids',allocationId], ['InvalidAllocationID.NotFound'])) throw new Error('Una IP publica del proyecto sigue asignada.');
+  }
+  results.awsChecks.publicIps = { absent:true, checkedAllocations:allocations.length };
+  results.passed = true;
   fs.writeFileSync(path.join(directory,'destroy-verification.json'),JSON.stringify(results,null,2));
   console.log(JSON.stringify(results,null,2));
 })().catch(error => { console.error(error); process.exitCode = 1; });

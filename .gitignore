@@ -7,7 +7,7 @@ terraform/**/.terraform/
 *.plan.json
 *.auto.tfvars
 crash.log
-evidence/*/
+evidence/*
 !evidence/README.md
 *.zip
 .env
