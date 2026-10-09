@@ -131,6 +131,14 @@ del operador y verifica dimensiones, formato y transparencia; escribe JSON y PNG
 en `evidence/dev/`. Si la cuenta bloquea un recurso, guardar el error y resolver
 la limitacion; no cambiar al plan de pago automaticamente.
 
+Para mostrar un resumen de los archivos reales y tomar capturas:
+
+```bash
+node scripts/show-evidence.cjs dev infrastructure
+node scripts/show-evidence.cjs dev verification
+node scripts/show-evidence.cjs dev monitoring
+```
+
 Despues de capturar evidencias, eliminar DEV:
 
 ```bash
@@ -138,8 +146,9 @@ bash scripts/run-environment.sh dev destroy
 ```
 
 El script guarda un **plan de destruccion**, ejecuta `terraform destroy`, guarda
-logs y exige estado vacio y ausencia de recursos en AWS. Tambien se puede usar
-manualmente:
+logs y exige estado vacio y ausencia de recursos en AWS, incluidos API, roles IAM,
+SNS, logs, NATs, endpoints e IPs publicas. El resumen final se muestra con
+`node scripts/show-evidence.cjs dev destroy`. Tambien se puede usar manualmente:
 
 ```bash
 terraform -chdir=terraform/environments/dev destroy -no-color
