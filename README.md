@@ -7,10 +7,10 @@ un PNG circular **40 x 40 px con fondo transparente**.
 
 ## Estado del entregable
 
-El codigo y las pruebas locales estan preparados. Las evidencias de despliegue,
-destruccion y URL de repositorio deben corresponder a ejecuciones y publicaciones
-reales. Consultar `docs/ESTADO.md` para el estado actualizado; no presentar una plantilla
-como si fuera evidencia de AWS.
+Repositorio: [jordan4-debug/aws-image-processor](https://github.com/jordan4-debug/aws-image-processor).
+El codigo y las pruebas locales estan preparados. Consultar `docs/ESTADO.md` para
+el estado del despliegue y la destruccion. La guia `docs/GUIA-EXPLICACION.md` ayuda
+a entender y explicar la implementacion; las evidencias deben ser ejecuciones reales.
 
 ## Arquitectura
 
@@ -101,12 +101,11 @@ evidence/                Evidencias por entorno, excluidas de Git
 ## Ruta recomendada: AWS CloudShell
 
 CloudShell permite ejecutar la entrega sin instalar AWS CLI local ni compartir claves.
-Abrir CloudShell desde la consola, subir `image-processor-cloudshell.zip` con
-**Acciones > Cargar archivo**, y ejecutar:
+Abrir CloudShell desde la consola y clonar el repositorio:
 
 ```bash
-unzip image-processor-cloudshell.zip -d image-processor
-cd image-processor
+git clone https://github.com/jordan4-debug/aws-image-processor.git
+cd aws-image-processor
 bash scripts/prepare-cloudshell.sh
 ```
 
