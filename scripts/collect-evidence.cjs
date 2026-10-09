@@ -1,6 +1,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const { STSClient, GetCallerIdentityCommand } = require('@aws-sdk/client-sts');
 const { S3Client, GetBucketVersioningCommand, GetBucketEncryptionCommand, GetPublicAccessBlockCommand, GetBucketLifecycleConfigurationCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const { SQSClient, GetQueueAttributesCommand } = require('@aws-sdk/client-sqs');
@@ -14,6 +15,12 @@ const directory = path.resolve(__dirname, '..', 'evidence', environment);
 const config = JSON.parse(fs.readFileSync(path.join(directory, 'deployment.json'), 'utf8'));
 const region = config.region;
 const s3 = new S3Client({region}); const sqs = new SQSClient({region}); const lambda = new LambdaClient({region}); const logs = new CloudWatchLogsClient({region}); const ec2 = new EC2Client({region});
+function cli(arguments_) {
+  const response = spawnSync('aws', [...arguments_, '--region', region, '--output', 'json', '--no-cli-pager'], { encoding:'utf8' });
+  if (response.error) throw response.error;
+  if (response.status !== 0) throw new Error(response.stderr.trim());
+  return JSON.parse(response.stdout);
+}
 (async () => {
   const results = { checkedAt: new Date().toISOString(), environment, deployment: config };
   const checks = [
@@ -36,6 +43,17 @@ const s3 = new S3Client({region}); const sqs = new SQSClient({region}); const la
     ['securityGroups', () => ec2.send(new DescribeSecurityGroupsCommand({Filters:[{Name:'vpc-id',Values:[config.vpc_id]}]}))]
   ];
   for (const [name,run] of checks) results[name] = await run();
+  const apiId = new URL(config.api_url).hostname.split('.')[0];
+  results.api = cli(['apigatewayv2','get-api','--api-id',apiId]);
+  results.apiRoutes = cli(['apigatewayv2','get-routes','--api-id',apiId]);
+  results.apiStage = cli(['apigatewayv2','get-stage','--api-id',apiId,'--stage-name','$default']);
+  results.apiIntegrations = cli(['apigatewayv2','get-integrations','--api-id',apiId]);
+  results.bucketNotification = cli(['s3api','get-bucket-notification-configuration','--bucket',config.bucket]);
+  results.sns = cli(['sns','get-topic-attributes','--topic-arn',config.sns_topic_arn]);
+  results.uploadRolePolicy = cli(['iam','get-role-policy','--role-name',`${config.upload_function}-lambda-role`,'--policy-name','write-uploads-only']);
+  results.cropRolePolicy = cli(['iam','get-role-policy','--role-name',`${config.crop_function}-lambda-role`,'--policy-name','read-upload-write-processed-consume-queue']);
+  results.logConfiguration = [];
+  for (const name of config.log_groups) results.logConfiguration.push(...cli(['logs','describe-log-groups','--log-group-name-prefix',name]).logGroups.filter(group => group.logGroupName === name));
   results.logs = {};
   for (const logGroupName of config.log_groups) {
     try { results.logs[logGroupName] = await logs.send(new FilterLogEventsCommand({ logGroupName, startTime: Date.now() - 3600000, limit: 100 })); }

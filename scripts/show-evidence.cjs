@@ -14,6 +14,7 @@ if (section === 'infrastructure') {
   console.log(fs.readFileSync(path.join(directory,'apply.log'),'utf8').split('\n').find(x=>x.includes('Apply complete!')));
   console.log(`Consulta AWS: ${a.checkedAt}`);
   console.log(`API: ${config.api_url}`);
+  if (a.apiRoutes) console.log(`Rutas: ${a.apiRoutes.Items.map(r=>r.RouteKey).join(', ')} | autodeploy=${a.apiStage.AutoDeploy}`);
   console.log(`S3: ${config.bucket} | versionado=${a.versioning.Status}`);
   console.log(`VPC: ${config.vpc_id} | ${a.vpc.Vpcs[0].CidrBlock}`);
   for (const s of a.subnets.Subnets) console.log(`Subred ${s.AvailabilityZone} ${s.CidrBlock} ${s.SubnetId}`);
