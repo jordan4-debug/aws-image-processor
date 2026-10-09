@@ -1,0 +1,14 @@
+node_modules/
+.build/
+terraform/**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan.json
+*.auto.tfvars
+crash.log
+evidence/*/
+!evidence/README.md
+*.zip
+.env
+credentials*
