@@ -8,9 +8,11 @@ un PNG circular **40 x 40 px con fondo transparente**.
 ## Estado del entregable
 
 Repositorio: [jordan4-debug/aws-image-processor](https://github.com/jordan4-debug/aws-image-processor).
-El codigo y las pruebas locales estan preparados. Consultar `docs/ESTADO.md` para
-el estado del despliegue y la destruccion. La guia `docs/GUIA-EXPLICACION.md` ayuda
-a entender y explicar la implementacion; las evidencias deben ser ejecuciones reales.
+Se desplegaron DEV, QA y PROD y se aprobaron **12 pruebas reales**: JSON,
+multipart, carga firmada y PNG de 10 MiB en cada entorno. Tambien se aprobaron
+ocho pruebas locales. Consultar `docs/ESTADO.md` para el estado de la destruccion
+y del PDF. La guia `docs/GUIA-EXPLICACION.md` ayuda a entender y explicar la
+implementacion; las evidencias corresponden a ejecuciones reales.
 
 ## Arquitectura
 
