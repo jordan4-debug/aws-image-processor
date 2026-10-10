@@ -69,12 +69,15 @@ resource "aws_security_group" "upload" {
   description = "Sin ingreso; HTTPS solo a S3 y endpoint SQS"
   vpc_id      = aws_vpc.main.id
   tags        = local.tags
+  # Lambda needs its execution role until the ENIs using this group are removed.
+  depends_on = [aws_iam_role_policy_attachment.vpc]
 }
 resource "aws_security_group" "crop" {
   name        = "${local.name}-sg-crop-lambda"
   description = "Sin ingreso; HTTPS solo a S3 y endpoint SQS"
   vpc_id      = aws_vpc.main.id
   tags        = local.tags
+  depends_on  = [aws_iam_role_policy_attachment.vpc]
 }
 resource "aws_security_group" "sqs_endpoint" {
   name        = "${local.name}-sg-vpce-sqs"
