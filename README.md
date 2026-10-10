@@ -12,7 +12,10 @@ Se desplegaron DEV, QA y PROD y se aprobaron **12 pruebas reales**: JSON,
 multipart, carga firmada y PNG de 10 MiB en cada entorno. Tambien se aprobaron
 ocho pruebas locales. Consultar `docs/ESTADO.md` para el estado de la destruccion
 y del PDF. La guia `docs/GUIA-EXPLICACION.md` ayuda a entender y explicar la
-implementacion; las evidencias corresponden a ejecuciones reales.
+implementacion; las evidencias corresponden a ejecuciones reales. Los tres
+entornos se eliminaron con `terraform destroy`, comprobando estados vacios y
+ausencia de los recursos en AWS. El PDF conserva las capturas de despliegue y
+limpieza; sus datos de cuenta se entregan fuera del repositorio publico.
 
 ## Arquitectura
 
