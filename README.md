@@ -159,6 +159,12 @@ Repetir plan, apply, verify, capturas y destroy para **qa** y **prod**, uno por 
 Esto evita mantener seis NAT Gateways al mismo tiempo y posibles limites de IPs.
 No destruir antes de descargar las evidencias.
 
+La eliminacion de las interfaces de red de Lambda puede tardar varios minutos.
+Los grupos de seguridad dependen de los permisos IAM de VPC para conservarlos
+hasta retirar esas interfaces. No borrar los roles por separado durante la espera;
+AWS necesita esos permisos para limpiar la red. Ver la
+[documentacion de Lambda y VPC](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html).
+
 ## Preparacion local en Windows
 
 Desde PowerShell, en la carpeta del proyecto:
