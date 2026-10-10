@@ -241,14 +241,3 @@ sus versiones al destruir. Solo usar datos de prueba. En un PROD real cambiar a
 `false` y disenar respaldo/retencion. No borrar el estado ni la carpeta de CloudShell
 antes de destruir; si apply falla a medias, Terraform conserva recursos creados
 y se debe ejecutar destroy desde la misma raiz.
-
-## Publicacion y PDF
-
-Crear un repositorio en GitHub y subir codigo, README, diagrama y lockfiles.
-Excluir `node_modules`, `.build`, `.terraform`, estados, planes y evidencias de cuenta.
-Anadir la URL real del repositorio al PDF. No necesita seguir funcionando la API
-despues de eliminar los recursos: la URL de proyecto corresponde al repositorio,
-y los endpoints temporales se documentan en las evidencias.
-
-Usar el checklist de `docs/CHECKLIST-ENTREGA.md` para reunir capturas reales de AWS,
-pruebas y destruccion antes de generar el PDF final.
